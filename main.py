@@ -43,6 +43,13 @@ def unescape( str ):
     str = str.replace("&amp;","&")
     return str
 
+def transform( str ):
+    str = str.replace("ActivateWindow(10025,&quot;", "")
+    str = str.replace("ActivateWindow(10001,&quot;", "")
+    str = str.replace("amp;", "")
+    str = str.replace("&quot;,return)", "")
+    return str
+
 @plugin.route('/play/<url>')
 def play(url):
     xbmc.executebuiltin('PlayMedia("%s")' % url)
@@ -211,22 +218,27 @@ def add_favourites(path):
     favourites = re.findall("<favourite.*?</favourite>",data)
     for fav in favourites:
         url = ''
-        match = re.search('<favourite name="(.*?)" filetype="(.*?)" thumb="(.*?)">(.*?)<',fav)
+        match = re.search('>(.*?)<',fav)
+        if match:
+            url = match.group(1)
+        label = ''
+        match = re.search('name="(.*?)"',fav)
         if match:
             label = match.group(1)
-            filetype = match.group(2)
-            thumbnail = match.group(3)
-            url = match.group(4)
+        thumbnail = get_icon_path('unknown')
+        match = re.search('thumb="(.*?)"',fav)
+        if match:
+            thumbnail = match.group(1)
         if url:
             context_items = []
-            context_items.append(("[COLOR yellow][B]%s[/B][/COLOR] " % 'Add', 'XBMC.RunPlugin(%s)' % (plugin.url_for(add_favourite, favourites_file=output_file, name=label, url=url, thumbnail=thumbnail, filetype="unknown"))))
-            items.append(
-            {
+            context_items.append(("[COLOR yellow][B]%s[/B][/COLOR] " % 'Add', 'XBMC.RunPlugin(%s)' % (plugin.url_for(add_favourite, favourites_file=output_file, name=label, url=transform(url), thumbnail=thumbnail, filetype="unknown"))))
+            item = {
                 'label': unescape(label),
                 'path': url,#plugin.url_for('execute',url=unescape(url)),
                 'thumbnail':unescape(thumbnail),
                 'context_menu': context_items,
-            })
+            }
+            items.append(item)
     return items
 
 @plugin.route('/add_folder/<path>')
@@ -392,14 +404,14 @@ def add(path):
             'path': plugin.url_for('add_addons', favourites_file=favourites_file, media=media),
             'thumbnail': thumbnail,
         })
-
+    '''
     items.append(
     {
         'label': "[B]Favourites[/B]",
         'path': plugin.url_for('add_favourites',path=path),
         'thumbnail':get_icon_path('favourites'),
     })
-    '''
+  
     items.append(
     {
         'label': "New Folder",
