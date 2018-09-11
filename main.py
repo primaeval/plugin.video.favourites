@@ -58,14 +58,18 @@ def play(url):
 def execute(url):
     xbmc.executebuiltin(url)
 
-@plugin.route('/add_favourite/<favourites_file>/<name>/<url>/<thumbnail>/<filetype>')
-def add_favourite(favourites_file,name,url,thumbnail,filetype):
+@plugin.route('/add_favourite/<favourites_file>/<name>/<url>/<thumbnail>/<fanart>/<playable>')
+def add_favourite(favourites_file,name,url,thumbnail,fanart,playable):
     xbmcvfs.mkdirs("special://profile/addon_data/%s/folders/" % (addon_id()))
     f = xbmcvfs.File(favourites_file,"rb")
     data = f.read()
     f.close()
     if not data:
         data = '<favourites>\n</favourites>'
+    if playable == "True":
+        filetype = "file"
+    else:
+        filetype = "folder"
     fav = '    <favourite name="%s" filetype="%s" thumb="%s">%s</favourite>\n</favourites>' % (name,filetype,thumbnail,url)
     data = data.replace('</favourites>',fav)
     f = xbmcvfs.File(favourites_file,"wb")
