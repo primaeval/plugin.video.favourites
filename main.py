@@ -205,7 +205,10 @@ def favourites(folder_path):
                 'thumbnail':unescape(thumbnail),
                 'context_menu': context_items,
                 'is_playable': is_playable,
+                'info_type': 'Video',
+                'info':{"mediatype": "episode", "title": unescape(label)},
             })
+    plugin.set_content("episodes")
     return items
 
 @plugin.route('/add_favourites/<path>')
@@ -411,7 +414,7 @@ def add(path):
         'path': plugin.url_for('add_favourites',path=path),
         'thumbnail':get_icon_path('favourites'),
     })
-  
+
     items.append(
     {
         'label': "New Folder",
