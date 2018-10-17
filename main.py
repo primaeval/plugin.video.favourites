@@ -126,7 +126,7 @@ def move_favourite_to_folder(favourites_file,name,url,thumbnail,filetype):
         return
     remove_favourite(favourites_file,name,url)
     favourites_file = "%sfavourites.xml" % where
-    add_favourite(favourites_file,name,url,thumbnail,filetype)
+    add_favourite(favourites_file,name,url,thumbnail,None,filetype)
 
 @plugin.route('/remove_favourite/<favourites_file>/<name>/<url>')
 def remove_favourite(favourites_file,name,url):
@@ -238,7 +238,7 @@ def add_favourites(path):
             thumbnail = match.group(1)
         if url:
             context_items = []
-            context_items.append(("[COLOR yellow][B]%s[/B][/COLOR] " % 'Add', 'XBMC.RunPlugin(%s)' % (plugin.url_for(add_favourite, favourites_file=output_file, name=label, url=transform(url), thumbnail=thumbnail, filetype="unknown"))))
+            context_items.append(("[COLOR yellow][B]%s[/B][/COLOR] " % 'Add', 'XBMC.RunPlugin(%s)' % (plugin.url_for(add_favourite, favourites_file=output_file, name=label, url=transform(url), thumbnail=thumbnail, fanart=" ",playable=True))))
             item = {
                 'label': unescape(label),
                 'path': url,#plugin.url_for('execute',url=unescape(url)),
@@ -324,7 +324,7 @@ def add_addons_folder(favourites_file,media,path):
                 window = "10001"
             play_url = escape('ActivateWindow(%s,"%s")' % (window,url))
             play_url = url
-            context_items.append(("[COLOR yellow][B]%s[/B][/COLOR] " % 'Add', 'XBMC.RunPlugin(%s)' % (plugin.url_for(add_favourite, favourites_file=favourites_file, name=label.encode("utf8"), url=play_url, thumbnail=thumbnail, filetype="directory"))))
+            context_items.append(("[COLOR yellow][B]%s[/B][/COLOR] " % 'Add', 'XBMC.RunPlugin(%s)' % (plugin.url_for(add_favourite, favourites_file=favourites_file, name=label.encode("utf8"), url=play_url, thumbnail=thumbnail, fanart=" ",playable=False))))
             dir_items.append({
                 'label': "[B]%s[/B]" % label,
                 'path': plugin.url_for('add_addons_folder', favourites_file=favourites_file, media="files", path=url),
@@ -334,7 +334,7 @@ def add_addons_folder(favourites_file,media,path):
         else:
             play_url = escape('PlayMedia("%s")' % url)
             play_url = url
-            context_items.append(("[COLOR yellow][B]%s[/B][/COLOR] " % 'Add', 'XBMC.RunPlugin(%s)' % (plugin.url_for(add_favourite, favourites_file=favourites_file, name=label.encode("utf8"), url=play_url, thumbnail=thumbnail, filetype="file"))))
+            context_items.append(("[COLOR yellow][B]%s[/B][/COLOR] " % 'Add', 'XBMC.RunPlugin(%s)' % (plugin.url_for(add_favourite, favourites_file=favourites_file, name=label.encode("utf8"), url=play_url, thumbnail=thumbnail, fanart=" ",playable=True))))
             file_items.append({
                 'label': "%s" % label,
                 'path': url,#plugin.url_for('play',url=url),
@@ -344,48 +344,7 @@ def add_addons_folder(favourites_file,media,path):
             })
     return sorted(dir_items, key=lambda x: x["label"].lower()) + sorted(file_items, key=lambda x: x["label"].lower())
 
-'''
-@plugin.route('/add_addons/<favourites_file>/<media>')
-def add_addons(favourites_file, media):
-    type = "xbmc.addon.%s" % media
 
-    response = RPC.addons.get_addons(type=type,properties=["name", "thumbnail"])
-    if "addons" not in response:
-        return
-
-    addons = response["addons"]
-
-    items = []
-
-    addons = sorted(addons, key=lambda addon: remove_formatting(addon['name']).lower())
-    for addon in addons:
-        label = addon['name']
-        id = addon['addonid']
-        thumbnail = addon['thumbnail']
-        if not thumbnail:
-            thumbnail = get_icon_path('unknown')
-        path = "plugin://%s" % id
-        context_items = []
-        fancy_label = "[B]%s[/B]" % label
-        if media == "video":
-            window = "10025"
-        else:
-            window = "10502"
-        if id.startswith("script"):
-            play_url = escape('RunScript("%s")' % (id))
-        else:
-            play_url = escape('ActivateWindow(%s,"%s")' % (window,path))
-        play_url = path
-        context_items.append(("[COLOR yellow][B]%s[/B][/COLOR] " % 'Add', 'XBMC.RunPlugin(%s)' % (plugin.url_for(add_favourite, favourites_file=favourites_file, name=label.encode("utf8"), url=play_url, thumbnail=thumbnail, filetype="directory"))))
-        items.append(
-        {
-            'label': fancy_label,
-            'path': plugin.url_for('add_addons_folder', favourites_file=favourites_file, media="files", path=path),
-            'thumbnail': thumbnail,
-            'context_menu': context_items,
-        })
-    return items
-'''
 @plugin.route('/add/<path>')
 def add(path):
     favourites_file = "%sfavourites.xml" % path
